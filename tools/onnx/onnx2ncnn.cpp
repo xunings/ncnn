@@ -887,6 +887,8 @@ int main(int argc, char** argv)
             fprintf(pp, " 0=%d", (int)M.dims(2));
             fprintf(pp, " 1=%d", (int)M.dims(1));
             fprintf(pp, " 2=%d", (int)M.dims(0));
+        } else if (M.dims_size() >= 4) {
+            fprintf(stderr, "Undefined behavior for MemoryData with input dim = %d.\n", M.dims_size());
         }
 
         fprintf(pp, "\n");
