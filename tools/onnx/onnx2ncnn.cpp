@@ -887,7 +887,22 @@ int main(int argc, char** argv)
             fprintf(pp, " 0=%d", (int)M.dims(2));
             fprintf(pp, " 1=%d", (int)M.dims(1));
             fprintf(pp, " 2=%d", (int)M.dims(0));
-        } else if (M.dims_size() >= 4) {
+        } else if (M.dims_size() == 4 && (int)M.dims(1) ==  1 && (int)M.dims(2) == 1) {
+            // Added for the 4-dim broadcasing case, e.g., the prelu layer converted from tensorflow.
+            // The prelu layer is implemented as per
+            // https://stackoverflow.com/questions/39975676/how-to-implement-prelu-activation-in-tensorflow, Hasnat's answer.
+            // After tf2onnx (v1.4.1, opset 7), the prelu alpha is converted to a 4-dim TensorProto,
+            // with M.dims(0 or 1 or 2)=1, M.dims(3) = n_channels.
+
+            // Note: the data format in this case is different from the above 3-dim case.
+            // An onnx data format of chw is assumed for the 3-dim TensorProto,
+            // but the real onnx data format seems to be nhwc in this 4-dim case.
+            
+            // The first param of MemoryData in ncnn is w,
+            // but it will be treated as c in the broadcasting case of binaryop (dim_a=3, dim_b=1)
+            fprintf(pp, " 0=%d", (int)M.dims(3));
+        }
+        else if (M.dims_size() >= 4) {
             fprintf(stderr, "Undefined behavior for MemoryData with input dim = %d.\n", M.dims_size());
         }
 
